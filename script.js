@@ -38,6 +38,7 @@ const modes = {
 
 let selectedMode = 'prematch';
 let lastMessage = '';
+let lastLanguage = 'english';
 
 const modeGrid = document.getElementById('modeGrid');
 const builderPanel = document.getElementById('builderPanel');
@@ -116,6 +117,7 @@ function getContext() {
     opponentTeam: formValue('opponentTeam', 'the opposition'),
     tone: formValue('tone', 'funny'),
     platform: formValue('platform', 'whatsapp'),
+    language: formValue('language', 'english'),
     confidence: formValue('confidence', 'Confident'),
     scorer: formValue('scorer', 'My team'),
     emotion: formValue('emotion', 'Joy'),
@@ -130,7 +132,8 @@ function createMessage() {
   const context = getContext();
   const templates = getTemplates(selectedMode, context);
   const selected = templates[Math.floor(Math.random() * templates.length)];
-  lastMessage = adaptForPlatform(selected, context.platform);
+  lastLanguage = context.language;
+  lastMessage = adaptForPlatform(selected, context.platform, context.language);
   generatedMessage.textContent = lastMessage;
   outputPanel.classList.remove('hidden');
   copyStatus.textContent = '';
@@ -138,6 +141,10 @@ function createMessage() {
 }
 
 function getTemplates(mode, c) {
+  return c.language === 'bangla' ? getBanglaTemplates(mode, c) : getEnglishTemplates(mode, c);
+}
+
+function getEnglishTemplates(mode, c) {
   const match = `${c.myTeam} vs ${c.opponentTeam}`;
   const toneLine = {
     funny: 'Football is doing its usual job of ruining everyone’s calm.',
@@ -179,9 +186,64 @@ function getTemplates(mode, c) {
   ];
 }
 
-function adaptForPlatform(message, platform) {
+function getBanglaTemplates(mode, c) {
+  const match = `${teamName(c.myTeam, 'আমার দল')} বনাম ${teamName(c.opponentTeam, 'প্রতিপক্ষ')}`;
+  const toneLine = {
+    funny: 'ফুটবল আবারও আমাদের ম্যাচডে মুডটা দারুণ করে তুলছে।',
+    passionate: 'এই জন্যই বিশ্বকাপের আবেগ আলাদা।',
+    savage: 'বন্ধুত্বপূর্ণ খোঁচা দিচ্ছি, ফুল টাইমে কিন্তু এই কথাটা মনে থাকবে।',
+    emotional: 'এই ম্যাচটা আবেগ নিয়েই খেলছে।',
+    balanced: 'এখনও অনেক খেলা বাকি, কিন্তু ম্যাচের মুড বদলে গেছে।'
+  }[c.tone];
+
+  if (mode === 'prematch') {
+    const confidence = { Calm: 'শান্ত', Confident: 'আত্মবিশ্বাসী', Overconfident: 'খুব আত্মবিশ্বাসী' }[c.confidence] || 'আত্মবিশ্বাসী';
+    return [
+      `${match} শুরু হতে যাচ্ছে। আমি এখন ${confidence}। দেখা যাক বিশ্বকাপ আজ কী গল্প লিখে। ${toneLine}`,
+      `কিক অফের আগে ছোট্ট ভবিষ্যদ্বাণী। ${teamName(c.myTeam, 'আমার দল')} আজ ${teamName(c.opponentTeam, 'প্রতিপক্ষ')} কে ভালো চ্যালেঞ্জ দেবে।`,
+      `${match} শুরু হওয়ার অপেক্ষা। মুড ভালো, আশা বড়, আর গ্রুপ চ্যাট প্রস্তুত।`
+    ];
+  }
+
+  if (mode === 'goal') {
+    const side = c.scorer === 'My team' ? teamName(c.myTeam, 'আমার দল') : c.scorer === 'Opponent' ? teamName(c.opponentTeam, 'প্রতিপক্ষ') : 'একটি দল';
+    const emotion = { Joy: 'আনন্দ', Shock: 'অবাক', Relief: 'স্বস্তি', Pain: 'মন খারাপ' }[c.emotion] || 'আনন্দ';
+    return [
+      `${side} গোল করেছে, আর ম্যাচের গল্প বদলে গেছে। আমার বর্তমান অনুভূতি: ${emotion}। ${toneLine}`,
+      `গোল। এই মুহূর্তটাই বিশ্বকাপকে আলাদা করে। ${toneLine}`,
+      `একটা গোল, আর পুরো ম্যাচের মুড বদলে গেল। ${side} এখন আলোচনার কেন্দ্রবিন্দু।`
+    ];
+  }
+
+  if (mode === 'halftime') {
+    const mood = { Tactical: 'কৌশলভিত্তিক', Chaotic: 'এলোমেলো', Boring: 'ধীরগতির', Tense: 'টানটান', Brilliant: 'দারুণ' }[c.mood] || 'টানটান';
+    const prediction = { 'Goal coming': 'গোল আসতে পারে', 'VAR drama': 'ভিএআর আলোচনা হতে পারে', 'More control': 'আরও নিয়ন্ত্রণ দেখা যেতে পারে', 'Total chaos': 'দ্বিতীয়ার্ধ আরও জমে উঠতে পারে' }[c.prediction] || 'গোল আসতে পারে';
+    return [
+      `${match} নিয়ে হাফ টাইম মতামত: প্রথমার্ধ ছিল ${mood}। দ্বিতীয়ার্ধে আমার ধারণা, ${prediction}। ${toneLine}`,
+      `হাফ টাইম। ম্যাচটা এখনও খোলা আছে। মুড ${mood}, আর একটা ভালো মুহূর্তেই সব বদলে যেতে পারে।`,
+      `প্রথমার্ধের সারাংশ: সহজ না, শেষও না। বিরতির পর ${prediction}।`
+    ];
+  }
+
+  const feeling = { Celebration: 'উদযাপন', Heartbreak: 'মন খারাপ', Relief: 'স্বস্তি', Respect: 'সম্মান', Frustration: 'হতাশা' }[c.feeling] || 'উদযাপন';
+  const verdict = { Deserved: 'প্রাপ্য', Lucky: 'ভাগ্যবান', Dramatic: 'নাটকীয়', Painful: 'কঠিন', Unbelievable: 'অবিশ্বাস্য' }[c.verdict] || 'নাটকীয়';
+  return [
+    `${match} শেষ। অনুভূতি: ${feeling}। রায়: ${verdict} ম্যাচ। ${toneLine}`,
+    `ফাইনাল হুইসেল হয়ে গেছে, কিন্তু ম্যাচের আবেগ এখনও শেষ হয়নি। ${verdict} ম্যাচ, ${feeling} মুড।`,
+    `ফুল টাইম। বিশ্বকাপ আবারও একটা গল্প দিয়ে গেল, আর ম্যাচডে চ্যাটে আলোচনার বিষয় তৈরি হলো।`
+  ];
+}
+
+function teamName(value, fallback) {
+  return value && value.trim() ? value.trim() : fallback;
+}
+
+function adaptForPlatform(message, platform, language) {
   if (platform === 'facebook') {
-    return `${message}\n\nWorld Cup nights always find a way to become a story.`;
+    const suffix = language === 'bangla'
+      ? 'বিশ্বকাপের রাতগুলো সবসময় কোনো না কোনো গল্প তৈরি করে।'
+      : 'World Cup nights always find a way to become a story.';
+    return `${message}\n\n${suffix}`;
   }
   if (platform === 'x') {
     return message.length > 230 ? `${message.slice(0, 227)}...` : message;
@@ -193,9 +255,13 @@ async function copyMessage() {
   if (!lastMessage) return;
   try {
     await navigator.clipboard.writeText(lastMessage);
-    copyStatus.textContent = 'Copied. Ready to paste into your matchday chat.';
+    copyStatus.textContent = lastLanguage === 'bangla'
+      ? 'কপি হয়েছে। এখন আপনার ম্যাচডে চ্যাটে পেস্ট করতে পারবেন।'
+      : 'Copied. Ready to paste into your matchday chat.';
   } catch {
-    copyStatus.textContent = 'Copy failed. Please select the message and copy it manually.';
+    copyStatus.textContent = lastLanguage === 'bangla'
+      ? 'কপি হয়নি। অনুগ্রহ করে মেসেজটি সিলেক্ট করে ম্যানুয়ালি কপি করুন।'
+      : 'Copy failed. Please select the message and copy it manually.';
   }
 }
 
