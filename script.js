@@ -51,8 +51,34 @@ const generatedMessage = document.getElementById('generatedMessage');
 const copyStatus = document.getElementById('copyStatus');
 
 function init() {
+  prepareRequiredFields();
   renderModes();
   bindEvents();
+}
+
+function prepareRequiredFields() {
+  ['myTeam', 'opponentTeam'].forEach((id) => {
+    const field = document.getElementById(id);
+    if (field) field.required = true;
+  });
+
+  ['tone', 'platform', 'language'].forEach((id) => {
+    const select = document.getElementById(id);
+    if (select) addPlaceholderOption(select);
+  });
+}
+
+function addPlaceholderOption(select) {
+  select.required = true;
+  if (!select.querySelector('option[value=""]')) {
+    const placeholder = document.createElement('option');
+    placeholder.value = '';
+    placeholder.textContent = 'Please select';
+    placeholder.disabled = true;
+    placeholder.selected = true;
+    select.insertBefore(placeholder, select.firstChild);
+  }
+  select.value = '';
 }
 
 function renderModes() {
@@ -99,7 +125,8 @@ function renderDynamicFields(fields) {
   dynamicFields.innerHTML = fields.map((field) => `
     <label>
       <span>${field.label}</span>
-      <select id="${field.id}" name="${field.id}">
+      <select id="${field.id}" name="${field.id}" required>
+        <option value="" disabled selected>Please select</option>
         ${field.options.map((option) => `<option value="${option}">${option}</option>`).join('')}
       </select>
     </label>
@@ -129,6 +156,11 @@ function getContext() {
 }
 
 function createMessage() {
+  if (!vibeForm.checkValidity()) {
+    vibeForm.reportValidity();
+    return;
+  }
+
   const context = getContext();
   const templates = getTemplates(selectedMode, context);
   const selected = templates[Math.floor(Math.random() * templates.length)];
