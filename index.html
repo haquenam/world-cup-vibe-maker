@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="World Cup Vibe Maker helps football fans create instant WhatsApp messages, Facebook posts, and matchday reactions while watching the game." />
+  <title>World Cup Vibe Maker</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <main class="app-shell">
+    <section class="hero" aria-labelledby="page-title">
+      <div class="badge">Second Screen Matchday Companion</div>
+      <h1 id="page-title">World Cup Vibe Maker</h1>
+      <p class="subtitle">Tap the moment. Pick the mood. Share the perfect matchday message.</p>
+      <p class="intro">
+        Create instant WhatsApp messages, Facebook statuses, X posts, and matchday banter while you watch the game.
+        No login, no live data, no backend. Just quick fan reactions ready to copy and share.
+      </p>
+    </section>
+
+    <section class="panel" aria-labelledby="mode-heading">
+      <div class="section-heading">
+        <p class="eyebrow">Choose The Match Moment</p>
+        <h2 id="mode-heading">What do you want to say?</h2>
+      </div>
+      <div class="mode-grid" id="modeGrid" aria-label="Message modes"></div>
+    </section>
+
+    <section class="panel builder hidden" id="builderPanel" aria-labelledby="builderHeading">
+      <div class="builder-header">
+        <div>
+          <p class="eyebrow" id="selectedModeLabel">Mode</p>
+          <h2 id="builderHeading">Build Your Message</h2>
+        </div>
+        <button class="ghost-button" id="changeModeButton" type="button">Change Mode</button>
+      </div>
+
+      <form id="vibeForm" class="vibe-form">
+        <div class="form-grid">
+          <label>
+            <span>My Team</span>
+            <input id="myTeam" name="myTeam" type="text" placeholder="e.g. Brazil" maxlength="30" />
+          </label>
+          <label>
+            <span>Opponent</span>
+            <input id="opponentTeam" name="opponentTeam" type="text" placeholder="e.g. Morocco" maxlength="30" />
+          </label>
+        </div>
+
+        <div id="dynamicFields" class="dynamic-fields"></div>
+
+        <div class="form-grid">
+          <label>
+            <span>Tone</span>
+            <select id="tone" name="tone">
+              <option value="funny">Funny</option>
+              <option value="passionate">Passionate</option>
+              <option value="savage">Savage</option>
+              <option value="emotional">Emotional</option>
+              <option value="balanced">Balanced</option>
+            </select>
+          </label>
+          <label>
+            <span>Platform</span>
+            <select id="platform" name="platform">
+              <option value="whatsapp">WhatsApp</option>
+              <option value="facebook">Facebook</option>
+              <option value="x">X</option>
+            </select>
+          </label>
+        </div>
+
+        <div class="actions">
+          <button class="primary-button" type="submit">Generate Vibe</button>
+          <button class="secondary-button" id="resetButton" type="button">Start Again</button>
+        </div>
+      </form>
+    </section>
+
+    <section class="panel output-panel hidden" id="outputPanel" aria-labelledby="outputHeading">
+      <div class="section-heading">
+        <p class="eyebrow">Ready To Share</p>
+        <h2 id="outputHeading">Your Matchday Message</h2>
+      </div>
+      <div class="message-card">
+        <p id="generatedMessage"></p>
+      </div>
+      <div class="actions output-actions">
+        <button class="primary-button" id="copyButton" type="button">Copy Message</button>
+        <button class="secondary-button" id="generateAnotherButton" type="button">Generate Another</button>
+        <button class="ghost-button" id="outputStartAgainButton" type="button">Start Again</button>
+      </div>
+      <p class="copy-status" id="copyStatus" role="status" aria-live="polite"></p>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <p>Open source matchday fun by Enamul Haque. Built with HTML, CSS, and JavaScript.</p>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>
